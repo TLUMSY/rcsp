@@ -6,7 +6,6 @@ from fastapi import FastAPI, HTTPException, Depends
 
 Base = declarative_base()
 
-# Ассоциативная таблица для связи многие-ко-многим между студентами и расписанием занятий
 student_class_association = Table('student_class', Base.metadata,
     Column('student_id', Integer, ForeignKey('students.id')),
     Column('class_schedule_id', Integer, ForeignKey('class_schedules.id'))
@@ -51,7 +50,6 @@ class User(Base):
     full_name = Column(String, nullable=False)  
     password = Column(String, nullable=False)  
 
-# Создание базы данных
 engine = create_engine('postgresql+psycopg2://postgres:123456@185.195.25.237:5431/rksp')
 Base.metadata.create_all(engine)
 
@@ -59,7 +57,6 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 def init():
-    # Добавление групп
     groups = [
         Group(group_number='101'),
         Group(group_number='102'),
@@ -68,7 +65,6 @@ def init():
     session.add_all(groups)
     session.commit()
 
-    # Добавление студентов
     students = [
         Student(full_name=f'Студент {i}', group_id=(i % 3) + 1) 
         for i in range(1, 61)
@@ -76,7 +72,6 @@ def init():
     session.add_all(students)
     session.commit()
 
-    # Добавление преподавателей
     instructors = [
         Instructor(full_name=f'Преподаватель {i}') 
         for i in range(1, 7)
@@ -84,7 +79,6 @@ def init():
     session.add_all(instructors)
     session.commit()
 
-    # Добавление расписания
     class_schedules = [
         ClassSchedule(group_id=1, subject_name='Математика', class_time=time(9, 0), instructor_id=1),
         ClassSchedule(group_id=2, subject_name='Программирование', class_time=time(10, 30), instructor_id=2),
@@ -96,12 +90,12 @@ def init():
     session.add_all(class_schedules)
     session.commit()
 
-    # Присвоение студентов к занятиям
+
     for student in students:
         student.class_schedules.append(class_schedules[student.id % 6])
     session.commit()
 
-    # Добавление пользователей
+
     users = [
         User(login=f'user{i}', full_name=f'Пользователь {i}', password=f'password{i}')
         for i in range(1, 6)
